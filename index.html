@@ -1,4 +1,3 @@
-//hola
 <html lang="en">
 <head>
 	<meta charset="UTF-8">
@@ -9,11 +8,6 @@
 	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
 	<script src="https://kit.fontawesome.com/6853cc10ae.js" crossorigin="anonymous"></script>
 	<style>
-		.bg1{background-color: lightcoral;}
-		.bg2{background-color: lightblue;}
-		.bg3{background-color: lightgreen;}
-		.bg4{background-color: lightyellow;}
-		.bg5{background-color: lightseagreen;}
 		.btn-red{background-color: hsl(343, 66%, 51%);}
 		.btn-yellow{background-color: hsl(43, 66%, 51%);}
 		.btn-blue{background-color: #305ed5ff}
@@ -34,22 +28,22 @@
 			<div class="col py-4 ">
 				<div class="table-system ">
 					<div class="header  d-flex justify-content-between">
-						<input class="form-control" type="search" placeholder="Buscar" style="width: max-content;">
+						<input id="inputSearch" class="form-control" type="search" placeholder="Buscar" style="width: max-content;">
 						<div class="d-flex justify-content-between gap-1">
 							<button class="btn btn-blue text-white py-2" title="Crear nuevo"><i class="fa-solid fa-plus"></i></button>
-							<button class="btn btn-red text-white py-2" title="Eliminar" disabled><i class="fa-solid fa-trash"></i></button>
+							<button class="btn btn-red text-white py-2" title="Eliminar"><i class="fa-solid fa-trash"></i></button>
 							<button class="btn btn-yellow text-white py-2" title="Ver Eliminados"><i class="fa-solid fa-users-slash"></i></button>
 						</div>
 					</div>
-					<div class="table-responsive general-shadow mt-4">
-						<table id="table" class="table rounded mb-0">
-							<thead>
-								<tr class="align-middle border border-2" style="background-color: #e5e7eb;">
+					<div class="table-responsive general-shadow mt-4" style="height: 80vh">
+						<table id="table" class="table overflow-auto rounded mb-0">
+							<thead class="sticky-top general-shadow">
+								<tr id="tableHeadRow" class="align-middle" style="background-color: #e5e7eb; color: #4b5563">
 									<th id="main-checkbox" class="text-center border-bottom-0" style="width: 2em;"><input class="form-check-input" style="cursor: pointer" type="checkbox" name="" id=""></th>
-									<th class="" style="color: #4b5563">Nombre</th>
-									<th class="" style="color: #4b5563">Apellidos</th>
-									<th class="" style="color: #4b5563">Cedula</th>
-									<th class="" style="color: #4b5563">Correo</th>
+									<th>Nombre</th>
+									<th>Apellidos</th>
+									<th>Cedula</th>
+									<th>Correo</th>
 									<th class="text-center" style="color: #4b5563">Acciones</th>
 								</tr>
 							</thead>
@@ -66,9 +60,9 @@
 	const tableBody = document.getElementById('tableBody');
 	tableBody.addEventListener('click', (event) => {
 		if(event.target.type === "checkbox" && event.target.checked)
-			event.target.parentElement.parentElement.classList.add('selectedRow', 'border', 'border-2')
+			event.target.parentElement.parentElement.classList.add('selectedRow')
 		else
-			event.target.parentElement.parentElement.classList.remove('selectedRow', 'border', 'border-2')
+			event.target.parentElement.parentElement.classList.remove('selectedRow')
 	});
 
 	const mainCheckbox = document.getElementById('main-checkbox');
@@ -85,34 +79,64 @@
 	function verifyCheckBoxes(){
 		for(row of tableBody.children){
 			if(row.firstElementChild.firstElementChild.checked)
-				row.classList.add('selectedRow', 'border', 'border-2');
+				row.classList.add('selectedRow');
 			else
-				row.classList.remove('selectedRow', 'border', 'border-2');
+				row.classList.remove('selectedRow');
 		}
 	}
 	verifyCheckBoxes();
 
 	//Rellenar la tabla
+	let arrayUsuarios;
 	fetch("https://api.mockaroo.com/api/d2e97030?count=50&key=a29397b0")
 			.then(response => response.json())
 			.then(array => {
-				array.forEach(element => {
-					console.log(element);
-					tableBody.insertAdjacentHTML('beforeend', `
-						<tr class="transicion align-middle">
-							<td class="text-center "><input class="form-check-input" style="cursor: pointer" type="checkbox" name="" id=""></td>
-							<td class="">${element.nombre}</td>
-							<td class="">${element.apellido1} ${element.apellido2}</td>
-							<td class="">${element.cedula}</td>
-							<td class="">${element.correo}</td>	
-							<td class=" text-center">
-								<i class="fa-solid fa-pen-to-square me-1 fs-5" style="cursor: pointer"></i>
-								<i class="fa-solid fa-circle-info ms-1 fs-5" style="cursor: pointer"></i>									
-							</td>	
-						</tr>
-					`);
-				});
+				arrayUsuarios = array;
+				buscarEnTabla("");
 			});
+
+	function buscarEnTabla(texto){
+		arrayUsuarios.forEach(element => {
+			let encontrado = false;
+			Object.values(element).forEach(campo => {
+				campo = String(campo);
+				if(campo.includes(texto))
+					encontrado = true;
+			});
+			if(encontrado)
+				agregarFila(element);
+		});
+	}
+
+	function agregarFila(element){
+		tableBody.insertAdjacentHTML('beforeend', `
+			<tr class="transicion align-middle">
+				<td class="text-center "><input class="form-check-input" style="cursor: pointer" type="checkbox"></td>
+				<td class="">${element.nombre}</td>
+				<td class="">${element.apellido1} ${element.apellido2}</td>
+				<td class="">${element.cedula}</td>
+				<td class="">${element.correo}</td>	
+				<td class="text-center">
+					<i class="fa-solid fa-pen-to-square me-1 fs-5" style="cursor: pointer"></i>
+					<i class="fa-solid fa-circle-info ms-1 fs-5" style="cursor: pointer"></i>									
+				</td>	
+			</tr>
+		`);
+	}
+
+	const inputSearch = document.getElementById('inputSearch');
+	const tableHeadRow = document.getElementById('tableHeadRow');
+	inputSearch.addEventListener('input', () => {
+		tableBody.innerHTML = "";
+		buscarEnTabla(inputSearch.value);
+		if(tableBody.childElementCount === 0){
+			let colspanNumber = tableHeadRow.childElementCount;
+			tableBody.insertAdjacentHTML('beforeend', `
+				<tr>
+					<td colspan="${colspanNumber}" class="text-center">No hay registros.</td>
+				</tr>
+			`);
+		}
+	});
 </script>
 </html>
-
